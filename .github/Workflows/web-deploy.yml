@@ -1,0 +1,37 @@
+name: Build and Deploy Web
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# Nødvendige rettigheder for at lade GitHub koden skrive til gh-pages branchen
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Web
+        # HUSK: Ret '/<dit-repo-navn>/' til navnet på dit GitHub repository
+        # Hvis det hostes på roden af et domæne, kan du fjerne --base-href flaget helt.
+        run: flutter build web --release --base-href "/DAVStar/"
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
